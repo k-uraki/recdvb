@@ -34,7 +34,7 @@ endif
 all: $(TARGETS)
 
 clean:
-	rm -f $(OBJALL) $(TARGETS) $(DEPEND) version.h
+	rm -f $(OBJALL) $(TARGETS) $(DEPEND) version.h pt1_dev.h
 
 distclean: clean
 	rm -f Makefile config.h config.log config.status
@@ -54,7 +54,7 @@ $(TARGET3): $(OBJS3)
 $(TARGET4): $(OBJS4)
 	$(CC) $(LDFLAGS) -o $@ $(OBJS4) $(LIBS4)
 
-$(DEPEND): version.h
+$(DEPEND): version.h pt1_dev.h
 	$(CC) -MM $(OBJS:.o=.c) $(OBJS2:.o=.c) $(CPPFLAGS) > $@
 
 version.h:
@@ -64,6 +64,9 @@ version.h:
 	else \
 		echo "const char *version = \"$(RELEASE_VERSION)\";" > $@; \
 	fi
+
+pt1_dev.h: apply_dvbconf.pl
+	perl apply_dvbconf.pl
 
 install: $(TARGET)
 	install -m 755 $(TARGETS) $(DESTDIR)$(bindir)

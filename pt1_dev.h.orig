@@ -45,6 +45,7 @@ int isdb_t_dev[] = {
 // 変換テーブル
 
 ISDB_T_FREQ_CONV_TABLE    isdb_t_conv_table[] = {
+#if 0
     {   0, CHTYPE_SATELLITE, 0, 0x4010, "151"},  /* 151ch：BS朝日 */
     {   0, CHTYPE_SATELLITE, 1, 0x4011, "161"},  /* 161ch：BS-TBS */
     {   1, CHTYPE_SATELLITE, 0, 0x4030, "191"},  /* 191ch：WOWOW prime */
@@ -164,6 +165,10 @@ ISDB_T_FREQ_CONV_TABLE    isdb_t_conv_table[] = {
                                           * 321ch：MusicJapan TV
                                           * 350ch：日テレNEWS24
                                           * 362ch：旅チャンネル */
+#endif
+
+// <<<< dvbconf data >>>>
+
     {   0, CHTYPE_GROUND, 0, 0,   "1"}, {   1, CHTYPE_GROUND, 0, 0,   "2"},
     {   2, CHTYPE_GROUND, 0, 0,   "3"}, {   3, CHTYPE_GROUND, 0, 0, "C13"},
     {   4, CHTYPE_GROUND, 0, 0, "C14"}, {   5, CHTYPE_GROUND, 0, 0, "C15"},
