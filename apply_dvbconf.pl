@@ -13,6 +13,30 @@ use Encode;
 
 exit(main());
 
+sub split_ch_name {
+    my($ch) = @_;
+    $ch =~ /(BS|CS)([\d]+)(|_[\d]+)/;
+    return {
+        type => $1,
+        no => int($2),
+        add => int($3),
+    };
+}
+sub cmp_split_ch_name {
+    my($a, $b) = @_;
+    if($a->{type} eq $b->{type}) {
+        if($a->{no} == $b->{no}) {
+            return $a->{add} <=> $b->{add};
+        }
+        else {
+            return $a->{no} <=> $b->{no};
+        }
+    }
+    else {
+        return $a->{type} cmp $b->{type};
+    }
+}
+
 sub main {
     my $tmp_dir = '_tmp_';
     print("remove $tmp_dir\n");
@@ -70,6 +94,85 @@ sub main {
     # BS21_2(18258) # グリーンチャンネル 0x4752
     push(@datas, {ch => 'BS11_3', STREAM_ID => '18099'});   # 釣りビジョン
 
+    # BS0x_x を BSx_x のようにゼロパディング抜く
+    @datas = map{
+        my $ch = $_->{ch};
+        $ch =~ s/^BS0/BS/;
+        $_->{ch} = $ch;
+        $_;
+    } @datas;
+
+        # 抜けているチャンネル補填
+    my @all_chs = qw/
+BS1_0
+BS1_1
+BS1_2
+BS1_3
+BS3_0
+BS3_1
+BS3_2
+BS3_3
+BS5_0
+BS5_1
+BS5_2
+BS5_3
+BS7_0
+BS7_1
+BS7_2
+BS7_3
+BS9_0
+BS9_1
+BS9_2
+BS9_3
+BS11_0
+BS11_1
+BS11_2
+BS11_3
+BS13_0
+BS13_1
+BS13_2
+BS13_3
+BS15_0
+BS15_1
+BS15_2
+BS15_3
+BS17_0
+BS17_1
+BS17_2
+BS17_3
+BS19_0
+BS19_1
+BS19_2
+BS19_3
+BS21_0
+BS21_1
+BS21_2
+BS21_3
+BS23_0
+BS23_1
+BS23_2
+BS23_3
+        /;
+    my %ch_hash = map{$_->{ch}=>1} @datas;
+    foreach my $ch (@all_chs) {
+        if(!exists($ch_hash{$ch})) {
+            # ダミーなので内容は適当
+            push(@datas, {
+                ch => $ch,
+                DELIVERY_SYSTEM => 'ISDBS',
+                FREQUENCY => '1049480',
+                STREAM_ID => '0',
+            });
+        }
+    }
+
+    @datas = sort{
+        cmp_split_ch_name(
+            split_ch_name($a->{ch}),
+            split_ch_name($b->{ch})
+        );
+    } @datas;
+
     #print(Dumper(\@datas));
     printf("extract %d datas\n", scalar(@datas));
 
@@ -99,7 +202,7 @@ sub main {
             $freq = $freq/2 + 11;
             $slot = 0;
         }
-        push(@dst_lines, sprintf(qq/{%4d, CHTYPE_SATELLITE, %d, 0x%4x, "%s"}/, $freq, $slot, $tsid, $ch));
+        push(@dst_lines, sprintf(qq/{%4d, CHTYPE_SATELLITE, %d, 0x%04x, "%s"}/, $freq, $slot, $tsid, $ch));
     }
 
     print("read original source\n");
